@@ -20,14 +20,36 @@ stages: # List of stages for jobs, and their order of execution
 build-job: # This job runs in the build stage, which runs first.
   stage: e2e
   script:
-    - echo "Installing dependencies..."
-    - apt-get update -qq && apt-get install -y git nodejs postgresql-client
+    - echo "Installing system dependencies..."
+    - apt-get update -qq && apt-get install -y git postgresql-client libpq-dev curl
+    # Install Node.js + npm
+    - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    - apt-get install -y nodejs
+
+    # Optional: Install Chrome dependencies for Cypress
     - apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+
+    # Configure DB
     - cp config/database.yml.ci config/database.yml
+
+    # Install Bun
     - curl -fsSL https://bun.sh/install | bash
     - source ~/.bashrc
     - bun install
-    - bin/setup
+
+    # Setup Rails (skip server)
+    - bin/setup --skip-server
+
+    # Compile assets
+    - bun run build
+    - bun run build:css
+
+    # Start Rails server only
+    - bin/rails server -p 3000 -e test &
+
+    # Wait for Rails to boo
     - npx wait-on http://localhost:3000
+
+    # Verify Cypress and run tests
     - npx cypress --version
     - npx cypress run --headless --browser electron
