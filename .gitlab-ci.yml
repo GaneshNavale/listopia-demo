@@ -10,9 +10,11 @@ variables:
   RAILS_ENV: test
 
 cache:
+  key: ${CI_COMMIT_REF_SLUG}
   paths:
     - vendor/bundle
     - node_modules
+    - ~/.cache/Cypress
 
 stages: # List of stages for jobs, and their order of execution
   - e2e
