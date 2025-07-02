@@ -9,18 +9,16 @@ variables:
   POSTGRES_PASSWORD: password
   RAILS_ENV: test
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - vendor/bundle
-    - node_modules
-    - /root/.cache/Cypress
-
 stages: # List of stages for jobs, and their order of execution
   - e2e
 
 build-job: # This job runs in the build stage, which runs first.
   stage: e2e
+  cache:
+    key: cypress-v2
+    paths:
+      - node_modules
+      - /root/.cache/Cypress
   script:
     - echo "Installing system dependencies..."
     - apt-get update -qq && apt-get install -y git postgresql-client libpq-dev curl
@@ -38,6 +36,7 @@ build-job: # This job runs in the build stage, which runs first.
     - curl -fsSL https://bun.sh/install | bash
     - source ~/.bashrc
     - bun install
+    - npx cypress install
 
     # Setup Rails (skip server)
     - bin/setup --skip-server
