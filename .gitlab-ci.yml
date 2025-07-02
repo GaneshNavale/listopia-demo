@@ -1,0 +1,33 @@
+image: ruby:3.3.7
+
+services:
+  - postgres:14
+
+variables:
+  POSTGRES_DB: myapp_test
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: password
+  RAILS_ENV: test
+
+cache:
+  paths:
+    - vendor/bundle
+    - node_modules
+
+stages: # List of stages for jobs, and their order of execution
+  - e2e
+
+build-job: # This job runs in the build stage, which runs first.
+  stage: e2e
+  script:
+    - echo "Installing dependencies..."
+    - apt-get update -qq && apt-get install -y git nodejs postgresql-client
+    - apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+    - cp config/database.yml.ci config/database.yml
+    - curl -fsSL https://bun.sh/install | bash
+    - source ~/.bashrc
+    - bun install
+    - bin/setup
+    - npx wait-on http://localhost:3000
+    - npx cypress --version
+    - npx cypress run --headless --browser electron
