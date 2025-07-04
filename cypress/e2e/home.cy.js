@@ -48,8 +48,7 @@ describe('Listopia Landing Page', () => {
     const features = [
       {
         title: 'Smart Lists',
-        description:
-          'Create dynamic lists with different item types, priorities, and due dates.',
+        description: 'Create dynamic lists with different item types, priorities, and due dates.',
       },
       {
         title: 'Real-time Collaboration',
